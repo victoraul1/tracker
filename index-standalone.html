@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Tracker (Standalone)</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --info: #4895ef;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fb;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: white;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        
+        header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            color: var(--primary);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .projects {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .project-filters {
+            display: flex;
+            border-bottom: 1px solid #eee;
+            background-color: #fcfcfc;
+        }
+        
+        .filter-button {
+            padding: 15px 20px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--gray);
+            position: relative;
+        }
+        
+        .filter-button.active {
+            color: var(--primary);
+        }
+        
+        .filter-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary);
+        }
+        
+        .project-list {
+            padding: 0;
+            list-style: none;
+        }
+        
+        .project-item {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .project-item:last-child {
+            border-bottom: none;
+        }
+        
+        .project-info {
+            flex: 1;
+        }
+        
+        .project-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+        
+        .project-category {
+            display: inline-block;
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-right: 10px;
+        }
+        
+        .category-game {
+            background-color: #e9f3ff;
+            color: #2d82ff;
+        }
+        
+        .category-app {
+            background-color: #e7f9f1;
+            color: #0fc97b;
+        }
+        
+        .project-description {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin: 8px 0;
+            line-height: 1.4;
+        }
+        
+        .project-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .progress-container {
+            width: 120px;
+            height: 8px;
+            background-color: #eee;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary);
+        }
+        
+        .progress-value {
+            font-size: 0.9rem;
+            color: var(--gray);
+            font-weight: 500;
+            width: 40px;
+            text-align: right;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--gray);
+            color: var(--gray);
+        }
+        
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        
+        .completed .project-name {
+            text-decoration: line-through;
+            color: var(--gray);
+        }
+        
+        .completed .progress-bar {
+            background-color: var(--success);
+        }
+        
+        @media (max-width: 768px) {
+            .project-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .project-controls {
+                margin-top: 15px;
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+        
+        .project-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .status-message {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 5px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            transform: translateY(100px);
+            transition: transform 0.3s ease;
+        }
+        
+        .status-message.success {
+            background-color: #28a745;
+        }
+        
+        .status-message.error {
+            background-color: #dc3545;
+        }
+        
+        .status-message.warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .status-message.show {
+            transform: translateY(0);
+        }
+        
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255,255,255,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0,0,0,0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .password-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .password-input {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-size: 0.9rem;
+            width: 150px;
+        }
+        
+        .btn:disabled {
+            background-color: var(--gray);
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="status-message" id="status-message"></div>
+    
+    <header>
+        <div class="container">
+            <h1>Project Tracker (Standalone)</h1>
+            <div class="password-container">
+                <input type="password" id="password-input" placeholder="Enter 4-digit password" maxlength="4" class="password-input">
+                <button class="btn btn-primary" id="add-project-btn" disabled>Add New Project</button>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="total-projects">0</div>
+                <div class="stat-label">Total Projects</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="completed-projects">0</div>
+                <div class="stat-label">Completed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="in-progress">0</div>
+                <div class="stat-label">In Progress</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avg-completion">0%</div>
+                <div class="stat-label">Average Completion</div>
+            </div>
+        </div>
+        
+        <div class="projects">
+            <div class="project-filters">
+                <button class="filter-button active" data-filter="all">All Projects</button>
+                <button class="filter-button" data-filter="games">Games</button>
+                <button class="filter-button" data-filter="apps">Apps</button>
+                <button class="filter-button" data-filter="completed">Completed</button>
+            </div>
+            
+            <ul class="project-list" id="project-list">
+                <!-- Projects will be inserted here by JavaScript -->
+            </ul>
+        </div>
+    </div>
+    
+    <div class="project-modal" id="project-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Add New Project</h2>
+                <button class="close-modal" id="close-modal">&times;</button>
+            </div>
+            <form id="project-form">
+                <input type="hidden" id="project-id">
+                <div class="form-group">
+                    <label for="project-name-input">Project Name</label>
+                    <input type="text" id="project-name-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="project-category-input">Category</label>
+                    <select id="project-category-input" required>
+                        <option value="game">Game</option>
+                        <option value="app">App</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="project-description-input">Description (HTML allowed)</label>
+                    <textarea id="project-description-input" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="project-progress-input">Progress (%)</label>
+                    <input type="number" id="project-progress-input" min="0" max="100" value="0" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" id="cancel-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // DOM elements
+        const projectList = document.getElementById('project-list');
+        const filterButtons = document.querySelectorAll('.filter-button');
+        const addProjectBtn = document.getElementById('add-project-btn');
+        const projectModal = document.getElementById('project-modal');
+        const closeModalBtn = document.getElementById('close-modal');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const projectForm = document.getElementById('project-form');
+        const projectIdInput = document.getElementById('project-id');
+        const projectNameInput = document.getElementById('project-name-input');
+        const projectCategoryInput = document.getElementById('project-category-input');
+        const projectDescriptionInput = document.getElementById('project-description-input');
+        const projectProgressInput = document.getElementById('project-progress-input');
+        const modalTitle = document.getElementById('modal-title');
+        const loadingElement = document.getElementById('loading');
+        const statusMessage = document.getElementById('status-message');
+        
+        // Stats elements
+        const totalProjectsEl = document.getElementById('total-projects');
+        const completedProjectsEl = document.getElementById('completed-projects');
+        const inProgressEl = document.getElementById('in-progress');
+        const avgCompletionEl = document.getElementById('avg-completion');
+
+        // Projects data
+        let projects = [];
+        
+        // Authentication state
+        let isAuthenticated = false;
+        
+        // Show loading spinner
+        function showLoading() {
+            loadingElement.style.display = 'flex';
+        }
+        
+        // Hide loading spinner
+        function hideLoading() {
+            loadingElement.style.display = 'none';
+        }
+        
+        // Show status message
+        function showStatusMessage(message, type = 'success') {
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message ${type}`;
+            statusMessage.classList.add('show');
+            
+            setTimeout(() => {
+                statusMessage.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Sanitize text to prevent HTML injection
+        function sanitizeHTML(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.textContent;
+        }
+        
+        // Allow HTML in description (only used when rendering)
+        function renderHTML(html) {
+            return html;
+        }
+        
+        // Load projects from localStorage
+        function loadProjects() {
+            showLoading();
+            try {
+                const storedProjects = localStorage.getItem('projects');
+                if (storedProjects) {
+                    projects = JSON.parse(storedProjects);
+                } else {
+                    // Initialize with sample data if no data exists
+                    projects = [
+                        {
+                            id: 1,
+                            name: "iExportPeru",
+                            category: "game",
+                            description: "A maritime trade game where players must deliver cargo from Peru's Chancay port despite challenges like pirates and hurricanes.",
+                            progress: 0,
+                            completed: false
+                        },
+                        {
+                            id: 2,
+                            name: "Automovil.tech",
+                            category: "game",
+                            description: "A Tesla-themed racing game inspired by Out Run, set in a post-apocalyptic world where players transport the last humans to a Mars evacuation site.",
+                            progress: 0,
+                            completed: false
+                        },
+                        {
+                            id: 3,
+                            name: "Aeneas",
+                            category: "game",
+                            description: "A web-based adventure game following Aeneas's journey from Troy to Italy, featuring maze navigation and combat similar to Prince of Persia.",
+                            progress: 0,
+                            completed: false
+                        },
+                        {
+                            id: 4,
+                            name: "Chefs.pe",
+                            category: "game",
+                            description: "A cooking challenge game where players prepare Peruvian dishes using limited market ingredients and budget constraints.",
+                            progress: 0,
+                            completed: false
+                        },
+                        {
+                            id: 5,
+                            name: "Lavoe App",
+                            category: "app",
+                            description: "A Flutter-based voice command application that allows users to update their websites through speech using AI APIs.",
+                            progress: 0,
+                            completed: false
+                        }
+                    ];
+                    saveProjects();
+                }
+                updateStats();
+                renderProjects();
+                hideLoading();
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                showStatusMessage('Failed to load projects. Please try again.', 'error');
+                hideLoading();
+            }
+        }
+        
+        // Save projects to localStorage
+        function saveProjects() {
+            if (!isAuthenticated) {
+                showStatusMessage('Authentication required to save changes', 'error');
+                return;
+            }
+            
+            showLoading();
+            try {
+                localStorage.setItem('projects', JSON.stringify(projects));
+                hideLoading();
+                showStatusMessage('Projects saved successfully');
+                updateStats();
+            } catch (error) {
+                console.error('Error saving projects:', error);
+                showStatusMessage('Failed to save projects. Please try again.', 'error');
+                hideLoading();
+            }
+        }
+        
+        // Update statistics
+        function updateStats() {
+            const totalProjects = projects.length;
+            const completedProjects = projects.filter(project => project.completed).length;
+            const inProgress = totalProjects - completedProjects;
+            
+            let totalProgress = 0;
+            projects.forEach(project => {
+                totalProgress += project.progress;
+            });
+            const avgCompletion = totalProjects > 0 ? Math.round(totalProgress / totalProjects) : 0;
+            
+            totalProjectsEl.textContent = totalProjects;
+            completedProjectsEl.textContent = completedProjects;
+            inProgressEl.textContent = inProgress;
+            avgCompletionEl.textContent = `${avgCompletion}%`;
+        }
+        
+        // Render project list based on filter
+        function renderProjects(filter = 'all') {
+            projectList.innerHTML = '';
+            
+            let filteredProjects = projects;
+            
+            if (filter === 'games') {
+                filteredProjects = projects.filter(project => project.category === 'game');
+            } else if (filter === 'apps') {
+                filteredProjects = projects.filter(project => project.category === 'app');
+            } else if (filter === 'completed') {
+                filteredProjects = projects.filter(project => project.completed);
+            }
+            
+            filteredProjects.forEach(project => {
+                const li = document.createElement('li');
+                li.className = `project-item ${project.completed ? 'completed' : ''}`;
+                li.innerHTML = `
+                    <div class="project-info">
+                        <div>
+                            <span class="project-name">${sanitizeHTML(project.name)}</span>
+                            <span class="project-category category-${project.category}">${project.category === 'game' ? 'Game' : 'App'}</span>
+                        </div>
+                        <p class="project-description">${renderHTML(project.description)}</p>
+                    </div>
+                    <div class="project-controls">
+                        <div class="progress-container">
+                            <div class="progress-bar" style="width: ${project.progress}%"></div>
+                        </div>
+                        <span class="progress-value">${project.progress}%</span>
+                        <button class="btn btn-outline edit-btn" data-id="${project.id}" ${isAuthenticated ? '' : 'disabled'}>Edit</button>
+                        ${project.completed ? 
+                            `<button class="btn btn-outline mark-incomplete-btn" data-id="${project.id}" ${isAuthenticated ? '' : 'disabled'}>Mark Incomplete</button>` : 
+                            `<button class="btn btn-primary mark-complete-btn" data-id="${project.id}" ${isAuthenticated ? '' : 'disabled'}>Mark Complete</button>`
+                        }
+                    </div>
+                `;
+                projectList.appendChild(li);
+            });
+            
+            // Add event listeners to buttons
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const projectId = parseInt(this.getAttribute('data-id'));
+                    editProject(projectId);
+                });
+            });
+            
+            document.querySelectorAll('.mark-complete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const projectId = parseInt(this.getAttribute('data-id'));
+                    markProjectComplete(projectId);
+                });
+            });
+            
+            document.querySelectorAll('.mark-incomplete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const projectId = parseInt(this.getAttribute('data-id'));
+                    markProjectIncomplete(projectId);
+                });
+            });
+        }
+        
+        // Handle filter button clicks
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                const filter = this.getAttribute('data-filter');
+                renderProjects(filter);
+            });
+        });
+        
+        // Open modal to add a new project
+        addProjectBtn.addEventListener('click', function() {
+            modalTitle.textContent = 'Add New Project';
+            projectForm.reset();
+            projectIdInput.value = '';
+            projectModal.style.display = 'flex';
+        });
+        
+        // Close modal
+        function closeModal() {
+            projectModal.style.display = 'none';
+        }
+        
+        closeModalBtn.addEventListener('click', closeModal);
+        cancelBtn.addEventListener('click', closeModal);
+        
+        // Close modal when clicking outside
+        projectModal.addEventListener('click', function(e) {
+            if (e.target === projectModal) {
+                closeModal();
+            }
+        });
+        
+        // Edit project
+        function editProject(projectId) {
+            const project = projects.find(p => p.id === projectId);
+            if (project) {
+                modalTitle.textContent = 'Edit Project';
+                projectIdInput.value = project.id;
+                projectNameInput.value = project.name;
+                projectCategoryInput.value = project.category;
+                projectDescriptionInput.value = project.description;
+                projectProgressInput.value = project.progress;
+                projectModal.style.display = 'flex';
+            }
+        }
+        
+        // Mark project as complete
+        function markProjectComplete(projectId) {
+            const index = projects.findIndex(p => p.id === projectId);
+            if (index !== -1) {
+                projects[index].completed = true;
+                projects[index].progress = 100;
+                saveProjects();
+                renderProjects(document.querySelector('.filter-button.active').getAttribute('data-filter'));
+            }
+        }
+        
+        // Mark project as incomplete
+        function markProjectIncomplete(projectId) {
+            const index = projects.findIndex(p => p.id === projectId);
+            if (index !== -1) {
+                projects[index].completed = false;
+                saveProjects();
+                renderProjects(document.querySelector('.filter-button.active').getAttribute('data-filter'));
+            }
+        }
+        
+        // Handle form submission
+        projectForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const projectId = projectIdInput.value ? parseInt(projectIdInput.value) : null;
+            const name = projectNameInput.value;
+            const category = projectCategoryInput.value;
+            const description = projectDescriptionInput.value;
+            const progress = parseInt(projectProgressInput.value);
+            const completed = progress === 100;
+            
+            if (projectId) {
+                // Edit existing project
+                const index = projects.findIndex(p => p.id === projectId);
+                if (index !== -1) {
+                    projects[index] = {
+                        ...projects[index],
+                        name,
+                        category,
+                        description,
+                        progress,
+                        completed
+                    };
+                }
+            } else {
+                // Add new project
+                const newId = projects.length > 0 ? Math.max(...projects.map(p => p.id)) + 1 : 1;
+                projects.push({
+                    id: newId,
+                    name,
+                    category,
+                    description,
+                    progress,
+                    completed
+                });
+            }
+            
+            saveProjects();
+            renderProjects(document.querySelector('.filter-button.active').getAttribute('data-filter'));
+            closeModal();
+        });
+        
+        // Initialize
+        window.addEventListener('load', loadProjects);
+        
+        // Password validation
+        const passwordInput = document.getElementById('password-input');
+        const correctPassword = 'pass';
+        
+        passwordInput.addEventListener('input', function() {
+            if (this.value === correctPassword) {
+                isAuthenticated = true;
+                addProjectBtn.removeAttribute('disabled');
+                showStatusMessage('Password correct! You can now add and edit projects.', 'success');
+                // Enable all edit buttons
+                document.querySelectorAll('.edit-btn').forEach(btn => {
+                    btn.removeAttribute('disabled');
+                });
+                document.querySelectorAll('.mark-complete-btn, .mark-incomplete-btn').forEach(btn => {
+                    btn.removeAttribute('disabled');
+                });
+            } else {
+                isAuthenticated = false;
+                addProjectBtn.setAttribute('disabled', 'true');
+                // Disable all edit buttons
+                document.querySelectorAll('.edit-btn').forEach(btn => {
+                    btn.setAttribute('disabled', 'true');
+                });
+                document.querySelectorAll('.mark-complete-btn, .mark-incomplete-btn').forEach(btn => {
+                    btn.setAttribute('disabled', 'true');
+                });
+            }
+        });
+    </script>
+</body>
+</html> 

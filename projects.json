@@ -1,0 +1,44 @@
+{
+  "projects": [
+    {
+      "id": 1,
+      "name": "iExportPeru",
+      "category": "game",
+      "description": "A maritime trade game where players must deliver cargo from Peru's Chancay port despite challenges like pirates and hurricanes.",
+      "progress": 0,
+      "completed": false
+    },
+    {
+      "id": 2,
+      "name": "Automovil.tech",
+      "category": "game",
+      "description": "A Tesla-themed racing game inspired by Out Run, set in a post-apocalyptic world where players transport the last humans to a Mars evacuation site.",
+      "progress": 0,
+      "completed": false
+    },
+    {
+      "id": 3,
+      "name": "Aeneas",
+      "category": "game",
+      "description": "A web-based adventure game following Aeneas's journey from Troy to Italy, featuring maze navigation and combat similar to Prince of Persia.",
+      "progress": 0,
+      "completed": false
+    },
+    {
+      "id": 4,
+      "name": "Chefs.pe",
+      "category": "game",
+      "description": "A cooking challenge game where players prepare Peruvian dishes using limited market ingredients and budget constraints.",
+      "progress": 0,
+      "completed": false
+    },
+    {
+      "id": 5,
+      "name": "Lavoe App",
+      "category": "app",
+      "description": "A Flutter-based voice command application that allows users to update their websites through speech using AI APIs.",
+      "progress": 0,
+      "completed": false
+    }
+  ]
+} 
