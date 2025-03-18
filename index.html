@@ -393,6 +393,28 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+        
+        .read-more-btn {
+            color: var(--primary);
+            background: none;
+            border: none;
+            padding: 0;
+            font: inherit;
+            cursor: pointer;
+            margin-top: 5px;
+            font-size: 0.85rem;
+            display: inline-block;
+        }
+        
+        .read-more-btn:hover {
+            text-decoration: underline;
+        }
+        
+        .project-description.expanded {
+            display: block;
+            -webkit-line-clamp: unset;
+            overflow: visible;
+        }
     </style>
 </head>
 <body>
@@ -642,7 +664,14 @@
                             <span class="project-name">${sanitizeHTML(project.name)}</span>
                             <span class="project-category category-${project.category}">${project.category === 'game' ? 'Game' : 'App'}</span>
                         </div>
-                        <p class="project-description" title="${sanitizeHTML(project.description)}">${truncateToThreeLines(project.description)}</p>
+                        <div>
+                            <div>
+                                <p class="project-description" data-full-description="${sanitizeHTML(project.description)}">${renderHTML(project.description)}</p>
+                            </div>
+                            ${isDescriptionLong(project.description) ? 
+                                `<button class="read-more-btn" data-action="expand">Read more</button>` : 
+                                ''}
+                        </div>
                     </div>
                     <div class="project-controls">
                         <div class="progress-container">
@@ -830,6 +859,30 @@
                 return renderHTML(lines.slice(0, 3).join('\n') + '...');
             }
             return renderHTML(text);
+        }
+
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('read-more-btn')) {
+                const btn = e.target;
+                const descriptionEl = btn.previousElementSibling;
+                
+                if (btn.dataset.action === 'expand') {
+                    // Expand
+                    descriptionEl.classList.add('expanded');
+                    btn.textContent = 'Read less';
+                    btn.dataset.action = 'collapse';
+                } else {
+                    // Collapse
+                    descriptionEl.classList.remove('expanded');
+                    btn.textContent = 'Read more';
+                    btn.dataset.action = 'expand';
+                }
+            }
+        });
+
+        function isDescriptionLong(description) {
+            // Rough estimation - show Read More if description is longer than 180 characters
+            return description.length > 180;
         }
     </script>
 </body>
