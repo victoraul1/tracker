@@ -170,6 +170,11 @@
             font-size: 0.9rem;
             margin: 8px 0;
             line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         
         .project-controls {
@@ -637,7 +642,7 @@
                             <span class="project-name">${sanitizeHTML(project.name)}</span>
                             <span class="project-category category-${project.category}">${project.category === 'game' ? 'Game' : 'App'}</span>
                         </div>
-                        <p class="project-description">${renderHTML(project.description)}</p>
+                        <p class="project-description" title="${sanitizeHTML(project.description)}">${truncateToThreeLines(project.description)}</p>
                     </div>
                     <div class="project-controls">
                         <div class="progress-container">
@@ -818,6 +823,14 @@
                 });
             }
         });
+
+        function truncateToThreeLines(text) {
+            const lines = text.split('\n');
+            if (lines.length > 3) {
+                return renderHTML(lines.slice(0, 3).join('\n') + '...');
+            }
+            return renderHTML(text);
+        }
     </script>
 </body>
 </html>
