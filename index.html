@@ -543,74 +543,13 @@
         async function loadProjects() {
             showLoading();
             try {
-                // Try to load from server first
-                try {
-                    const response = await fetch('load-projects.php');
-                    if (response.ok) {
-                        const data = await response.json();
-                        projects = data.projects || [];
-                        updateStats();
-                        renderProjects();
-                        hideLoading();
-                        return;
-                    }
-                } catch (serverError) {
-                    console.warn('Server loading failed, trying localStorage:', serverError);
+                const response = await fetch('/api/projects');
+                if (!response.ok) {
+                    throw new Error('Failed to load projects');
                 }
                 
-                // Fallback to localStorage if server fails
-                const storedProjects = localStorage.getItem('projects');
-                if (storedProjects) {
-                    projects = JSON.parse(storedProjects);
-                } else {
-                    // Initialize with sample data if no data exists
-                    projects = [
-                        {
-                            id: 1,
-                            name: "iExportPeru",
-                            category: "game",
-                            description: "A maritime trade game where players must deliver cargo from Peru's Chancay port despite challenges like pirates and hurricanes.",
-                            progress: 0,
-                            completed: false
-                        },
-                        {
-                            id: 2,
-                            name: "Automovil.tech",
-                            category: "game",
-                            description: "A Tesla-themed racing game inspired by Out Run, set in a post-apocalyptic world where players transport the last humans to a Mars evacuation site.",
-                            progress: 0,
-                            completed: false
-                        },
-                        {
-                            id: 3,
-                            name: "Aeneas",
-                            category: "game",
-                            description: "A web-based adventure game following Aeneas's journey from Troy to Italy, featuring maze navigation and combat similar to Prince of Persia.",
-                            progress: 0,
-                            completed: false
-                        },
-                        {
-                            id: 4,
-                            name: "Chefs.pe",
-                            category: "game",
-                            description: "A cooking challenge game where players prepare Peruvian dishes using limited market ingredients and budget constraints.",
-                            progress: 0,
-                            completed: false
-                        },
-                        {
-                            id: 5,
-                            name: "Lavoe App",
-                            category: "app",
-                            description: "A Flutter-based voice command application that allows users to update their websites through speech using AI APIs.",
-                            progress: 0,
-                            completed: false
-                        }
-                    ];
-                    // Save to localStorage
-                    localStorage.setItem('projects', JSON.stringify(projects));
-                }
-                
-                showStatusMessage('Using local storage mode (changes will only be saved to this device)', 'warning');
+                const data = await response.json();
+                projects = data.projects || [];
                 updateStats();
                 renderProjects();
                 hideLoading();
@@ -630,39 +569,25 @@
             
             showLoading();
             try {
-                // Try to save to server first
-                let serverSaveSuccessful = false;
+                const dataToSave = {
+                    projects: projects,
+                    password: correctPassword
+                };
                 
-                try {
-                    const dataToSave = {
-                        projects: projects,
-                        password: correctPassword
-                    };
-                    
-                    const response = await fetch('save-project.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(dataToSave)
-                    });
-                    
-                    if (response.ok) {
-                        serverSaveSuccessful = true;
-                    }
-                } catch (serverError) {
-                    console.warn('Server saving failed, using localStorage:', serverError);
+                const response = await fetch('/api/projects', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(dataToSave)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to save projects');
                 }
-                
-                // Always save to localStorage as backup
-                localStorage.setItem('projects', JSON.stringify(projects));
                 
                 hideLoading();
-                if (serverSaveSuccessful) {
-                    showStatusMessage('Projects saved successfully to server and locally');
-                } else {
-                    showStatusMessage('Projects saved to local storage only', 'warning');
-                }
+                showStatusMessage('Projects saved successfully');
                 updateStats();
             } catch (error) {
                 console.error('Error saving projects:', error);
